@@ -1,0 +1,726 @@
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+.mr-host { display: block; width: 100%; max-width: 100%; overflow-x: hidden; }
+</style>
+
+<div class="mr-host">
+
+<script>
+(function() {
+
+  if (customElements.get('me-results')) return;
+
+  class MeResults extends HTMLElement {
+    connectedCallback() {
+      var shadow = this.attachShadow({ mode: 'open' });
+
+      shadow.innerHTML = `
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:host {
+  display: block;
+  --green: #047857;
+  --green-mid: #059669;
+  --green-light: #d1fae5;
+  --green-xlight: #ecfdf5;
+  --bg: #FAF9F7;
+  --bg-warm: #F3F0EC;
+  --bg-warmer: #EDE9E3;
+  --dark: #111827;
+  --body-color: #1F2937;
+  --mid: #4B5563;
+  --muted: #9CA3AF;
+  --border: #E5E1DA;
+  --white: #FFFFFF;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--body-color);
+  -webkit-font-smoothing: antialiased;
+}
+.results-wrap { background: var(--bg); }
+
+/* CONFIRMATION BANNER */
+.confirm-banner {
+  background: var(--green-xlight);
+  border-bottom: 1.5px solid var(--green-light);
+  padding: 18px 24px;
+  text-align: center;
+}
+.confirm-banner-main {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--green);
+  margin-bottom: 6px;
+}
+.confirm-banner-oneliner {
+  font-size: 14px;
+  color: var(--mid);
+  font-weight: 500;
+}
+
+/* TICKER */
+.ticker-wrap {
+  background: var(--green);
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 10px 0;
+}
+.ticker-inner { display: inline-block; animation: ticker 40s linear infinite; }
+.ticker-inner span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--green-light);
+  padding: 0 48px;
+}
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* LAYOUT */
+.results-inner { max-width: 720px; margin: 0 auto; padding: 56px 24px 120px; }
+
+/* SCORE HEADER */
+.score-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.score-eyebrow::before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--green);
+  flex-shrink: 0;
+}
+.score-display {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.score-number-wrap {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  line-height: 1;
+}
+.score-number {
+  font-size: 88px;
+  font-weight: 800;
+  letter-spacing: -4px;
+  color: var(--dark);
+  line-height: 1;
+}
+.score-denom {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--muted);
+  padding-bottom: 12px;
+}
+.severity-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  margin-bottom: 12px;
+}
+.score-email-line {
+  font-size: 14px;
+  color: var(--mid);
+  margin-bottom: 10px;
+}
+.score-email-line strong { color: var(--body-color); font-weight: 600; }
+.severity-desc {
+  font-size: 16px;
+  color: var(--mid);
+  line-height: 1.65;
+  max-width: 560px;
+}
+
+/* DIVIDER */
+.section-divider { height: 1px; background: var(--border); margin: 48px 0; }
+
+/* SECTION LABEL */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+
+/* MODULE ROWS */
+.module-row {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.module-row:last-child { border-bottom: none; }
+.module-row.is-primary {
+  background: #FFFBEB;
+  border-radius: 10px;
+  padding: 16px;
+  border: 1.5px solid #FDE68A;
+  margin: 4px 0;
+}
+.module-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 12px;
+}
+.module-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--body-color);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.primary-badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: #FEF3C7;
+  color: #D97706;
+  padding: 2px 8px;
+  border-radius: 100px;
+}
+.module-score {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--dark);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.module-denom { font-size: 12px; font-weight: 500; color: var(--muted); }
+.module-track { height: 6px; background: var(--bg-warmer); border-radius: 3px; overflow: hidden; }
+.module-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+
+/* PRIMARY LEAK CARD */
+.leak-section {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 36px 32px;
+}
+.leak-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #D97706;
+  margin-bottom: 12px;
+}
+.leak-module-name {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: var(--dark);
+  margin-bottom: 6px;
+}
+.leak-score-line {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+.leak-headline {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--dark);
+  line-height: 1.4;
+  margin-bottom: 16px;
+}
+.leak-body {
+  font-size: 15px;
+  color: var(--mid);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+.leak-fix {
+  font-size: 15px;
+  color: var(--body-color);
+  line-height: 1.65;
+  padding: 18px 20px;
+  background: var(--bg);
+  border-radius: 10px;
+  border-left: 3px solid var(--green);
+}
+
+/* PITCH SECTION */
+.pitch-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.pitch-eyebrow::before {
+  content: '';
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--green);
+  flex-shrink: 0;
+}
+.pitch-transition {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--mid);
+  margin-bottom: 20px;
+  letter-spacing: 0.1px;
+}
+.pitch-headline {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: var(--dark);
+  line-height: 1.3;
+  margin-bottom: 14px;
+}
+.pitch-subheadline {
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--mid);
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+.pitch-body {
+  font-size: 16px;
+  color: var(--mid);
+  line-height: 1.75;
+  margin-bottom: 20px;
+}
+.pitch-body strong { color: var(--body-color); font-weight: 600; }
+
+/* OFFER CARD */
+.offer-card {
+  background: var(--white);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  margin: 28px 0;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.offer-card-left { flex: 1; min-width: 220px; }
+.offer-card-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 18px;
+}
+.offer-bullet {
+  font-size: 14px;
+  color: var(--mid);
+  padding: 7px 0 7px 22px;
+  position: relative;
+  line-height: 1.55;
+}
+.offer-bullet::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 14px;
+  width: 6px;
+  height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+}
+.offer-bullet strong { color: var(--body-color); font-weight: 600; }
+.offer-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 24px;
+  background: var(--bg);
+  border-radius: 12px;
+  min-width: 120px;
+}
+.offer-price {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  color: var(--dark);
+  line-height: 1;
+}
+.offer-price-note {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* CTA */
+.btn-cta {
+  display: block;
+  text-align: center;
+  background: var(--green);
+  color: var(--white);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  padding: 18px 40px;
+  border-radius: 12px;
+  text-decoration: none;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  transition: opacity 0.18s, transform 0.1s;
+}
+.btn-cta:hover { opacity: 0.88; transform: translateY(-1px); }
+.cta-note {
+  text-align: center;
+  font-size: 14px;
+  color: var(--mid);
+  margin-top: 14px;
+  line-height: 1.5;
+}
+.founding-note {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--white);
+  line-height: 1.6;
+}
+</style>
+
+<div class="results-wrap">
+
+  <div class="confirm-banner">
+    <div class="confirm-banner-main" id="confirm-main">Your results are on their way to your inbox. Check your email — your full breakdown will be there shortly.</div>
+    <div class="confirm-banner-oneliner" id="confirm-oneliner"></div>
+  </div>
+
+  <div class="ticker-wrap">
+    <div class="ticker-inner">
+      <span>Your Results</span>
+      <span>Retention Diagnostic</span>
+      <span>Member Engine</span>
+      <span>Your Personalised Plan</span>
+      <span>Your Results</span>
+      <span>Retention Diagnostic</span>
+      <span>Member Engine</span>
+      <span>Your Personalised Plan</span>
+    </div>
+  </div>
+
+  <div class="results-inner">
+
+    <div class="score-header">
+      <div class="score-eyebrow">Retention Diagnostic &mdash; Your Results</div>
+      <div class="score-display">
+        <div class="score-number-wrap">
+          <span class="score-number" id="total-score">&mdash;</span>
+          <span class="score-denom">/144</span>
+        </div>
+        <div class="severity-badge" id="severity-badge">&mdash;</div>
+      </div>
+      <div class="score-email-line" id="score-email-line">Your results have been sent to <strong id="email-display">&mdash;</strong></div>
+      <div class="severity-desc" id="severity-desc">&mdash;</div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div class="modules-section">
+      <div class="section-label">How you scored across all 6 modules</div>
+      <div id="modules-list"></div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div class="leak-section">
+      <div class="leak-eyebrow">Your Primary Leak</div>
+      <div class="leak-module-name" id="leak-module-name">&mdash;</div>
+      <div class="leak-score-line">Score: <span id="leak-score-val">&mdash;</span>/24</div>
+      <div class="leak-headline" id="leak-headline">&mdash;</div>
+      <div class="leak-body" id="leak-body">&mdash;</div>
+      <div class="leak-fix" id="leak-fix">&mdash;</div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div class="pitch-section">
+      <div class="pitch-eyebrow">// The Fix</div>
+      <div class="pitch-transition">You know where your membership is leaking. Here&rsquo;s how to plug it &mdash; this week.</div>
+      <div class="pitch-headline" id="pitch-headline">&mdash;</div>
+      <div class="pitch-subheadline" id="pitch-subheadline">&mdash;</div>
+
+      <div class="pitch-body">Membership retention is what we do. Not as a side interest &mdash; as a practice. We&rsquo;ve worked inside membership businesses at every stage, mapped the patterns, built the framework, and watched what actually moves the number. The six modules in this diagnostic aren&rsquo;t theoretical. They&rsquo;re the six places we look first when a membership is leaking, because after enough time in the room with these businesses, you stop guessing and start knowing where to look.</div>
+
+      <div class="pitch-body">The diagnostic you just completed is the tool we use to find the leak. What comes next is the fix.</div>
+
+      <div class="pitch-body">For <strong>$27</strong>, we&rsquo;re handing you the exact section of our framework that addresses your primary leak &mdash; built out as an implementation plan you can work from this week.</div>
+
+      <div class="pitch-body">Not a course. Not a video series. A working document, specific to your membership, specific to <strong id="pitch-module-name">&mdash;</strong>, that tells you what to do, in what order, starting now.</div>
+
+      <div class="offer-card">
+        <div class="offer-card-left">
+          <div class="offer-card-title" id="offer-card-title">Personalised Implementation Plan</div>
+          <div class="offer-bullet" id="offer-bullet-1">&mdash;</div>
+          <div class="offer-bullet" id="offer-bullet-2">&mdash;</div>
+          <div class="offer-bullet" id="offer-bullet-3">&mdash;</div>
+          <div class="offer-bullet" id="offer-bullet-4">&mdash;</div>
+          <div class="offer-bullet" id="offer-bullet-5">&mdash;</div>
+        </div>
+        <div class="offer-card-right">
+          <div class="offer-price">$27</div>
+          <div class="offer-price-note">One-time.<br>Instant access.</div>
+        </div>
+      </div>
+
+      <div class="pitch-body">This isn&rsquo;t a generic checklist repackaged as a plan. It&rsquo;s drawn from the same framework we use when we&rsquo;re working with a membership business directly. The difference is you&rsquo;re implementing it yourself. That&rsquo;s why it&rsquo;s $27 and not considerably more.</div>
+
+      <div class="pitch-body">The diagnostic identified the leak. This is the fix. We&rsquo;ve seen what happens when membership operators have the right diagnosis but no clear path to the solution &mdash; they sit on the information. This removes that problem.</div>
+
+      <div class="pitch-body">For most people, this document is enough to get moving. Some people get to the end and decide they&rsquo;d rather have the whole system implemented for them. That option exists too &mdash; but it starts here.</div>
+
+      <!-- UPDATE: replace href with actual Systeme.io $27 checkout URL -->
+      <a href="https://memberengine.co/get-your-plan" class="btn-cta" id="cta-btn">Get my fix plan for $27 &rarr;</a>
+      <div class="cta-note">One payment. Your implementation plan lands in your inbox within minutes. You can start this week.</div>
+
+      <div class="founding-note">This is a founding offer. We&rsquo;re opening the framework at $27 because we want the data &mdash; real businesses, real diagnostics, real results. Once that phase closes, this won&rsquo;t be $27. Get it while the model is still running at this price.</div>
+    </div>
+
+  </div>
+</div>
+`;
+
+      initResults(shadow);
+    }
+  }
+
+  customElements.define('me-results', MeResults);
+
+  function initResults(root) {
+
+    var params = new URLSearchParams(window.location.search);
+
+    var email   = params.get('email')  || '';
+    var total   = parseInt(params.get('total'))  || 0;
+    var primary = params.get('primary') || 'detection';
+    var moduleScores = {
+      activation:    parseInt(params.get('a'))  || 0,
+      habit:         parseInt(params.get('h'))  || 0,
+      connection:    parseInt(params.get('cn')) || 0,
+      communication: parseInt(params.get('cm')) || 0,
+      detection:     parseInt(params.get('d'))  || 0,
+      ascension:     parseInt(params.get('as')) || 0
+    };
+
+    var moduleOrder  = ['activation','habit','connection','communication','detection','ascension'];
+    var moduleLabels = {
+      activation:    'Activation',
+      habit:         'Habit Formation',
+      connection:    'Connection',
+      communication: 'Communication Architecture',
+      detection:     'Detection',
+      ascension:     'Ascension'
+    };
+
+    // Compute secondary and tertiary leaks
+    var sorted = moduleOrder.slice().sort(function(a,b){ return moduleScores[a] - moduleScores[b]; });
+    var secondary = sorted[1] !== primary ? sorted[1] : sorted[2];
+    var tertiary  = (sorted[1] !== primary ? sorted[2] : sorted[3]) || sorted[3];
+    // Simple approach: exclude primary, take next two lowest
+    var othersSorted = moduleOrder.filter(function(m){ return m !== primary; })
+                                   .sort(function(a,b){ return moduleScores[a] - moduleScores[b]; });
+    secondary = othersSorted[0];
+    tertiary  = othersSorted[1];
+
+    // Severity
+    var severity, severityBg, severityColor, severityDesc;
+    if (total > 114) {
+      severity = 'Healthy'; severityBg = '#D1FAE5'; severityColor = '#047857';
+      severityDesc = 'Your retention systems are performing well. The gaps that remain are refinements, not structural problems.';
+    } else if (total > 84) {
+      severity = 'Developing'; severityBg = '#DBEAFE'; severityColor = '#1D4ED8';
+      severityDesc = 'The foundations are in place but meaningful gaps remain. Closing them has a direct MRR impact.';
+    } else if (total > 48) {
+      severity = 'At Risk'; severityBg = '#FEF3C7'; severityColor = '#D97706';
+      severityDesc = 'Your membership is losing revenue it doesn\'t have to. The leaks are real, measurable, and fixable.';
+    } else {
+      severity = 'Critical'; severityBg = '#FEE2E2'; severityColor = '#DC2626';
+      severityDesc = 'Your churn is structural. Members are leaving for reasons that are predictable and preventable.';
+    }
+
+    // Dynamic copy maps
+    var bannerOneLiners = {
+      activation:    'Your primary leak is Activation \u2014 members are arriving but not staying past the first month.',
+      habit:         'Your primary leak is Habit Formation \u2014 members are joining with intention and losing it fast.',
+      connection:    'Your primary leak is Connection \u2014 members are engaging with content but not with each other.',
+      communication: 'Your primary leak is Communication Architecture \u2014 the right message isn\u2019t reaching the right members at the right time.',
+      detection:     'Your primary leak is Detection \u2014 your membership is losing people weeks before you find out.',
+      ascension:     'Your primary leak is Ascension \u2014 your best members have graduated themselves out.'
+    };
+
+    var pitchHeadlines = {
+      activation:    'Your onboarding is losing you members before they\u2019ve decided to stay. Here\u2019s the exact system to fix it.',
+      habit:         'Your members aren\u2019t coming back because there\u2019s no loop pulling them back. Here\u2019s how to build one.',
+      connection:    'Your members feel like subscribers, not members. Here\u2019s how to change that \u2014 by design, not by luck.',
+      communication: 'Your members are going quiet and you\u2019re not catching it. Here\u2019s the communication system that does.',
+      detection:     'You\u2019re finding out members are leaving when they cancel. Here\u2019s how to know weeks before they get there.',
+      ascension:     'Your best members have no path forward \u2014 so they leave. Here\u2019s how to build one and stop the graduation problem.'
+    };
+
+    var pitchSubheadlines = {
+      activation:    'The first 72 hours decide whether someone stays past month one. Right now, yours aren\u2019t doing that job.',
+      habit:         'Motivation to engage is highest at signup and lowest at renewal. You need a loop that doesn\u2019t depend on motivation.',
+      connection:    'People leave memberships they use. They stay in ones they belong to. Right now yours is a library, not a community.',
+      communication: 'Every member is somewhere different in their journey. You\u2019re sending them all the same message at the same time.',
+      detection:     'The decision to cancel is made 2\u20134 weeks before they actually do it. You have a window. You\u2019re not using it.',
+      ascension:     'The members who get the most out of your membership are the ones most likely to leave \u2014 because there\u2019s nowhere left to go.'
+    };
+
+    var ctaButtonText = {
+      activation:    'Get my Activation fix plan for $27 \u2192',
+      habit:         'Get my Habit Formation fix plan for $27 \u2192',
+      connection:    'Get my Connection fix plan for $27 \u2192',
+      communication: 'Get my Communication fix plan for $27 \u2192',
+      detection:     'Get my Detection fix plan for $27 \u2192',
+      ascension:     'Get my Ascension fix plan for $27 \u2192'
+    };
+
+    var primaryCopy = {
+      activation: {
+        headline: 'Members are leaving before they find the value.',
+        body: 'Your Activation score tells us that the critical first 30 days aren\u2019t working hard enough. Members are arriving, getting access, and quietly deciding this isn\u2019t for them \u2014 before your membership has had a chance to prove itself. The first-win moment isn\u2019t being delivered reliably, and without it, early churn is structural.',
+        fix: 'The fix is a defined activation sequence: a single first action, a clear success signal, and an automated follow-up that catches anyone who doesn\u2019t reach it within the first week.'
+      },
+      habit: {
+        headline: 'Members activated \u2014 but the return habit never formed.',
+        body: 'Your Habit Formation score tells us that members are making it past the initial excitement but going quiet in months 2\u20134. There\u2019s no deliberate return trigger, no named ritual that builds the \u201cwhen I do X, I check in\u201d loop. Without this, even genuinely interested members eventually drift.',
+        fix: 'The fix is a recurring ritual anchored to a consistent time or trigger, paired with investment mechanics that make leaving feel costly \u2014 not just inconvenient.'
+      },
+      connection: {
+        headline: 'Members are consuming in isolation.',
+        body: 'Your Connection score tells us that members don\u2019t have meaningful relationships with each other inside your membership. They\u2019re in a content library, not a community. Content gets consumed and forgotten \u2014 relationships create the real switching cost. Right now, leaving costs them nothing socially.',
+        fix: 'The fix is structured peer-to-peer interaction: deliberate formats that create genuine connection, a shared identity members claim as their own, and a recognition system that makes contribution visible.'
+      },
+      communication: {
+        headline: 'Members are tuning you out.',
+        body: 'Your Communication score tells us that your messages aren\u2019t landing with the weight they should. Inconsistent cadence, broadcast-style copy, and communications that feel transactional rather than relevant \u2014 over time this trains members to stop opening, stop reading, and stop feeling connected to what you\u2019re building.',
+        fix: 'The fix is a deliberate communication rhythm with lifecycle awareness: different messages for new, active, and at-risk members, and billing communications that reinforce value instead of just processing transactions.'
+      },
+      detection: {
+        headline: 'You\u2019re finding out members are leaving too late.',
+        body: 'Your Detection score tells us that by the time you know a member is at risk, they\u2019ve already mentally cancelled. The signals were there \u2014 reduced logins, fewer community interactions, email disengagement \u2014 but there\u2019s no system reading them early enough to act before the cancellation arrives.',
+        fix: 'The fix is an early-warning layer: defined engagement thresholds, automated triggers that fire before the member has made the decision, and a tiered intervention playbook that responds based on risk level and tenure.'
+      },
+      ascension: {
+        headline: 'Your best members have nowhere to go.',
+        body: 'Your Ascension score tells us that members who get real results from your membership \u2014 your proof of concept, your case studies, your most enthusiastic advocates \u2014 are hitting a ceiling and leaving. There\u2019s no next stage designed for them, no mechanism to grow revenue per member over time.',
+        fix: 'The fix is a deliberate ascension architecture: a Stage 2 that members see before they complete Stage 1, add-on offers that serve different maturity levels, and a status layer that makes tenure visible and valuable.'
+      }
+    };
+
+    // --- CONFIRMATION BANNER ---
+    if (email) {
+      root.querySelector('#confirm-main').textContent =
+        'Your results are on their way to ' + email + '. Check your inbox \u2014 your full breakdown, primary leak analysis, and three wow moments from the data will be there shortly.';
+    }
+    root.querySelector('#confirm-oneliner').textContent = bannerOneLiners[primary] || '';
+
+    // --- SCORE ---
+    root.querySelector('#total-score').textContent = total;
+
+    var badge = root.querySelector('#severity-badge');
+    badge.textContent = severity;
+    badge.style.background = severityBg;
+    badge.style.color = severityColor;
+
+    root.querySelector('#severity-desc').textContent = severityDesc;
+
+    if (email) {
+      root.querySelector('#email-display').textContent = email;
+    } else {
+      root.querySelector('#score-email-line').style.display = 'none';
+    }
+
+    // --- MODULE BARS ---
+    var html = '';
+    moduleOrder.forEach(function(mod) {
+      var score     = moduleScores[mod];
+      var pct       = Math.round(score / 24 * 100);
+      var isPrimary = (mod === primary);
+      var barColor  = score <= 8 ? '#DC2626' : score <= 16 ? '#D97706' : '#047857';
+      html += '<div class="module-row' + (isPrimary ? ' is-primary' : '') + '">';
+      html +=   '<div class="module-row-top">';
+      html +=     '<span class="module-name">' + moduleLabels[mod];
+      if (isPrimary) html += ' <span class="primary-badge">Primary leak</span>';
+      html +=     '</span>';
+      html +=     '<span class="module-score">' + score + '<span class="module-denom">/24</span></span>';
+      html +=   '</div>';
+      html +=   '<div class="module-track"><div class="module-fill" style="width:' + pct + '%;background:' + barColor + '"></div></div>';
+      html += '</div>';
+    });
+    root.querySelector('#modules-list').innerHTML = html;
+
+    // --- PRIMARY LEAK CARD ---
+    var leak = primaryCopy[primary] || primaryCopy['detection'];
+    root.querySelector('#leak-module-name').textContent = moduleLabels[primary] || primary;
+    root.querySelector('#leak-score-val').textContent   = moduleScores[primary];
+    root.querySelector('#leak-headline').textContent    = leak.headline;
+    root.querySelector('#leak-body').textContent        = leak.body;
+    root.querySelector('#leak-fix').textContent         = leak.fix;
+
+    // --- PITCH SECTION ---
+    var modName = moduleLabels[primary] || primary;
+    var sec2    = moduleLabels[secondary] || secondary;
+    var sec3    = moduleLabels[tertiary]  || tertiary;
+
+    root.querySelector('#pitch-headline').textContent    = pitchHeadlines[primary]    || '';
+    root.querySelector('#pitch-subheadline').textContent = pitchSubheadlines[primary] || '';
+    root.querySelector('#pitch-module-name').textContent = modName;
+    root.querySelector('#offer-card-title').textContent  = modName + ' Implementation Plan';
+
+    root.querySelector('#offer-bullet-1').innerHTML =
+      'The mechanism behind your <strong>' + modName + '</strong> leak \u2014 and why the most common response to it usually makes it worse';
+    root.querySelector('#offer-bullet-2').innerHTML =
+      'The exact steps we use to address it \u2014 the same framework we bring to businesses we work with directly';
+    root.querySelector('#offer-bullet-3').textContent =
+      'The one thing to do first (this week, not someday)';
+    root.querySelector('#offer-bullet-4').innerHTML =
+      'The scripts, templates, or frameworks that <strong>' + modName + '</strong> requires \u2014 so you\u2019re not building from scratch';
+    root.querySelector('#offer-bullet-5').innerHTML =
+      'A clear look at your two secondary leaks (<strong>' + sec2 + '</strong> and <strong>' + sec3 + '</strong>) \u2014 what they mean and where the full fix lives';
+
+    root.querySelector('#cta-btn').textContent = ctaButtonText[primary] || ('Get my ' + modName + ' fix plan for $27 \u2192');
+  }
+
+})();
+</script>
+
+<me-results></me-results>
+
+</div>
