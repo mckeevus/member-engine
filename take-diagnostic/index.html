@@ -1,0 +1,1033 @@
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+.md-host { display: block; width: 100%; max-width: 100%; overflow-x: hidden; }
+</style>
+
+<div class="md-host">
+
+<script>
+(function() {
+
+  if (customElements.get('me-diagnostic')) return;
+
+  class MeDiagnostic extends HTMLElement {
+    connectedCallback() {
+      var shadow = this.attachShadow({ mode: 'open' });
+
+      shadow.innerHTML = `
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:host {
+  display: block;
+  --green: #047857;
+  --green-mid: #059669;
+  --green-light: #d1fae5;
+  --green-xlight: #ecfdf5;
+  --green-dark: #064E3B;
+  --bg: #FAF9F7;
+  --bg-warm: #F3F0EC;
+  --bg-warmer: #EDE9E3;
+  --dark: #111827;
+  --body-color: #1F2937;
+  --mid: #4B5563;
+  --muted: #9CA3AF;
+  --border: #E5E1DA;
+  --white: #FFFFFF;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--body-color);
+  -webkit-font-smoothing: antialiased;
+}
+.diag-wrap { background: var(--bg); }
+
+/* TICKER */
+.ticker-wrap { background: var(--green); overflow: hidden; white-space: nowrap; padding: 10px 0; }
+.ticker-inner { display: inline-block; animation: ticker 40s linear infinite; }
+.ticker-inner span { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green-light); padding: 0 48px; }
+@keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+/* SHARED INNER */
+.quiz-inner { max-width: 720px; margin: 0 auto; padding: 56px 24px 100px; }
+
+/* INTRO SCREEN */
+.intro-screen { max-width: 720px; margin: 0 auto; padding: 80px 24px 100px; text-align: center; }
+.intro-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 28px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.intro-eyebrow::before { content: ''; display: block; width: 20px; height: 2px; background: var(--green); flex-shrink: 0; }
+.intro-title { font-size: 34px; font-weight: 800; letter-spacing: -1px; color: var(--dark); line-height: 1.2; margin-bottom: 20px; }
+.intro-sub { font-size: 17px; color: var(--mid); line-height: 1.7; max-width: 560px; margin: 0 auto 40px; }
+.intro-sub strong { color: var(--body-color); font-weight: 600; }
+.btn-start { display: inline-block; background: var(--green); color: var(--white); font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; font-size: 16px; font-weight: 700; padding: 18px 48px; border: none; border-radius: 12px; cursor: pointer; letter-spacing: -0.2px; transition: opacity 0.18s, transform 0.1s; }
+.btn-start:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* CHECKPOINT SCREEN */
+.checkpoint-screen { max-width: 720px; margin: 0 auto; padding: 64px 24px 100px; }
+.checkpoint-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; }
+.checkpoint-card { background: var(--white); border: 1.5px solid var(--border); border-radius: 16px; padding: 36px 32px; }
+.checkpoint-module-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 10px; }
+.checkpoint-score-display { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 20px; }
+.checkpoint-identity { display: inline-block; background: #FEF3C7; color: #D97706; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 12px; border-radius: 100px; margin-bottom: 20px; }
+.checkpoint-message { font-size: 17px; color: var(--body-color); line-height: 1.7; margin-bottom: 32px; }
+.checkpoint-message strong { color: var(--dark); font-weight: 700; }
+.btn-continue { display: inline-block; background: var(--green); color: var(--white); font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; font-size: 15px; font-weight: 700; padding: 14px 36px; border: none; border-radius: 10px; cursor: pointer; transition: opacity 0.18s, transform 0.1s; }
+.btn-continue:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* PROGRESS BAR */
+.progress-wrap { margin-bottom: 48px; }
+.progress-label { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+.progress-label .current { color: var(--green); }
+.progress-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.4s ease; }
+
+/* QUESTION CARD */
+.question-card { display: none; animation: fadeUp 0.3s ease forwards; }
+.question-card.active { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* MODULE LABEL */
+.q-module { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+.q-module::before { content: ''; display: block; width: 20px; height: 2px; background: var(--green); flex-shrink: 0; }
+
+/* GHOST NUMBER */
+.q-number { font-size: 96px; font-weight: 800; line-height: 0.85; color: var(--border); position: absolute; right: 0; top: -8px; pointer-events: none; user-select: none; letter-spacing: -4px; }
+.q-text-wrap { position: relative; padding-right: 64px; margin-bottom: 32px; }
+.q-text { font-size: 22px; font-weight: 700; line-height: 1.35; letter-spacing: -0.4px; color: var(--dark); }
+.q-estimate-hint { font-size: 13px; color: var(--muted); font-weight: 500; margin-top: 8px; }
+
+/* OPTIONS */
+.options { display: flex; flex-direction: column; gap: 10px; }
+.option { display: flex; align-items: flex-start; gap: 16px; padding: 18px 20px; background: var(--white); border: 1.5px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.18s; position: relative; overflow: hidden; }
+.option::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--green); border-radius: 12px 0 0 12px; transition: width 0.18s; }
+.option:hover { border-color: #A7F3D0; background: var(--green-xlight); }
+.option:hover::before { width: 3px; }
+.option.selected { border-color: var(--green); background: var(--green-xlight); }
+.option.selected::before { width: 3px; }
+.option-letter { font-size: 13px; font-weight: 800; color: var(--muted); min-width: 22px; flex-shrink: 0; padding-top: 1px; transition: color 0.18s; }
+.option.selected .option-letter { color: var(--green); }
+.option-text { font-size: 15px; font-weight: 400; line-height: 1.55; color: var(--mid); transition: color 0.18s; }
+.option.selected .option-text { color: var(--body-color); }
+
+/* NAV BUTTONS */
+.q-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; }
+.btn-next { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; background: var(--green); color: var(--white); border: none; border-radius: 10px; padding: 14px 32px; cursor: pointer; transition: opacity 0.18s, transform 0.1s; opacity: 0.3; pointer-events: none; }
+.btn-next.ready { opacity: 1; pointer-events: all; }
+.btn-next.ready:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn-back { font-size: 14px; font-weight: 600; background: none; color: var(--muted); border: none; cursor: pointer; padding: 14px 0; transition: color 0.18s; }
+.btn-back:hover { color: var(--body-color); }
+.btn-back:disabled { opacity: 0; pointer-events: none; }
+
+/* SUBMITTING STATE */
+.submitting-wrap { display: none; padding: 80px 24px; text-align: center; }
+.submitting-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--green); margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.submitting-eyebrow::before { content: ''; display: inline-block; width: 6px; height: 6px; background: var(--green); border-radius: 50%; }
+.submitting-title { font-size: 30px; font-weight: 800; letter-spacing: -0.8px; color: var(--dark); margin-bottom: 12px; }
+.submitting-sub { font-size: 16px; color: var(--mid); line-height: 1.6; }
+</style>
+
+<div class="diag-wrap">
+  <div class="ticker-wrap">
+    <div class="ticker-inner">
+      <span>Retention Diagnostic</span>
+      <span>Find your biggest leak</span>
+      <span>Takes a few minutes</span>
+      <span>Most people get this wrong</span>
+      <span>See where you&rsquo;re losing members</span>
+      <span>36 Diagnostic Questions</span>
+      <span>Retention Diagnostic</span>
+      <span>Find your biggest leak</span>
+      <span>Takes a few minutes</span>
+      <span>Most people get this wrong</span>
+      <span>See where you&rsquo;re losing members</span>
+      <span>36 Diagnostic Questions</span>
+    </div>
+  </div>
+
+  <!-- INTRO SCREEN -->
+  <div class="intro-screen" id="intro-screen">
+    <div class="intro-eyebrow">Retention Diagnostic</div>
+    <div class="intro-title">Most memberships don&rsquo;t have a churn problem.</div>
+    <p class="intro-sub">They have a <strong>misdiagnosed</strong> churn problem. This will show you exactly where yours is breaking &mdash; across 6 specific levers that most membership operators never think to measure. Takes a few minutes. Most people are surprised by what it surfaces.</p>
+    <button class="btn-start" id="btn-start">Start my diagnostic &rarr;</button>
+  </div>
+
+  <!-- CHECKPOINT SCREEN (reused for all 5 module checkpoints) -->
+  <div class="checkpoint-screen" id="checkpoint-screen" style="display:none">
+    <div class="checkpoint-eyebrow" id="cp-eyebrow">&mdash;</div>
+    <div class="checkpoint-card">
+      <div class="checkpoint-module-label" id="cp-module-label">&mdash;</div>
+      <div class="checkpoint-score-display" id="cp-score-display">&mdash;</div>
+      <div class="checkpoint-identity" id="cp-identity" style="display:none">&mdash;</div>
+      <div class="checkpoint-message" id="cp-message">&mdash;</div>
+      <button class="btn-continue" id="btn-continue">Continue &rarr;</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="quiz-inner" id="quiz-area" style="display:none">
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-label">
+        <span class="current" id="progress-current">Question 1 of 36</span>
+        <span id="progress-module">Phase 1: Activation</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div id="questions-container">
+
+      <div class="question-card active" data-q="1" data-module="activation" data-module-label="Activation">
+        <div class="q-module">Activation &mdash; Question 1 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">What happens the moment someone joins your membership?</div>
+          <div class="q-number">01</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">Nothing structured. They get access and figure it out themselves.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">They get a welcome email, but it&rsquo;s generic — login details and a link to the dashboard.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">There&rsquo;s a welcome sequence but it tells them what&rsquo;s available, not what to do first.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">There&rsquo;s a clear start-here path that walks them to a specific first action within 48 hours.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Onboarding is engineered around a single first win, with follow-up that confirms they got there.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back" disabled>&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="2" data-module="activation" data-module-label="Activation">
+        <div class="q-module">Activation &mdash; Question 2 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">How do you know when a new member has experienced genuine value?</div>
+          <div class="q-number">02</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">I don&rsquo;t track this. I assume they do eventually.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">I can see if they&rsquo;ve logged in and clicked around.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">I can see if they&rsquo;ve completed a specific piece of content.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">I have a defined first value moment and I can see whether each new member hit it.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">I track the first value milestone for every new member and intervene if they haven&rsquo;t reached it within the first week.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="3" data-module="activation" data-module-label="Activation">
+        <div class="q-module">Activation &mdash; Question 3 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">What is your 30-day cancellation rate for new members?</div>
+          <div class="q-estimate-hint">Estimate if you&rsquo;re not sure &mdash; best guess is fine.</div>
+          <div class="q-number">03</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">I don&rsquo;t track it, or it&rsquo;s above 20%.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">Around 15&ndash;20%.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">Around 10&ndash;15%.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Around 5&ndash;10%.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Below 5%, and I know why.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="4" data-module="activation" data-module-label="Activation">
+        <div class="q-module">Activation &mdash; Question 4 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Do you have a defined activation milestone &mdash; a specific action that signals a new member is likely to stay?</div>
+          <div class="q-number">04</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">No. I&rsquo;ve never thought about it in those terms.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">Not formally, but I have a rough sense of what engaged looks like.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">I know what it is but I don&rsquo;t actively track whether new members hit it.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">I track it and use it to identify members at risk of early churn.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">I track it, intervene when members don&rsquo;t hit it, and it&rsquo;s tied directly to my onboarding design.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="5" data-module="activation" data-module-label="Activation">
+        <div class="q-module">Activation &mdash; Question 5 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">How do you handle a new member who goes quiet in the first 14 days?</div>
+          <div class="q-number">05</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">I don&rsquo;t know it&rsquo;s happening until they cancel.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">I notice eventually but there&rsquo;s no systematic response.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">They get a re-engagement email, but it&rsquo;s the same for everyone.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">They get a targeted check-in based on what they haven&rsquo;t done yet.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">There&rsquo;s an automated early-warning trigger and a specific intervention before day 14.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="6" data-module="activation" data-module-label="Activation">
+        <div class="q-module">Activation &mdash; Question 6 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Does your onboarding set a clear expectation of what success looks like, and when?</div>
+          <div class="q-number">06</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">No. Members join and decide for themselves what they&rsquo;re trying to achieve.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">The sales page implies it, but we don&rsquo;t make it explicit after joining.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">Yes, in the welcome email.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Yes, and we reference it again at key points in the first 30 days.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">We define it, reinforce it, and use it as the anchor for the entire first member journey.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="7" data-module="habit" data-module-label="Habit Formation">
+        <div class="q-module">Habit Formation &mdash; Question 1 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">How do you know how often your members are actually engaging?</div>
+          <div class="q-number">07</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">I don&rsquo;t have visibility into this. I&rsquo;m working from gut feel.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">I can see login data but I don&rsquo;t look at it regularly.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">I check it occasionally and have a rough sense of who&rsquo;s active and who isn&rsquo;t.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">I review engagement data regularly and know the distribution across my whole membership.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">I have a clear view of engagement frequency across my full membership and I&rsquo;ve used it to deliberately shift the distribution over time.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="8" data-module="habit" data-module-label="Habit Formation">
+        <div class="q-module">Habit Formation &mdash; Question 2 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Is there a recurring ritual built into your membership that brings members back at a predictable time?</div>
+          <div class="q-number">08</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">No. Members come back when they feel like it.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">Content releases regularly but there&rsquo;s no deliberate trigger around it.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">Yes, there are releases on a schedule and members know when to expect them.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Yes, and the release is paired with a prompt or nudge that drives the return visit.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Yes. The ritual is named, anticipated, and members build their schedule around it.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="9" data-module="habit" data-module-label="Habit Formation">
+        <div class="q-module">Habit Formation &mdash; Question 3 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">How much content is currently in your membership library?</div>
+          <div class="q-number">09</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">I&rsquo;ve never counted and genuinely don&rsquo;t know.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">Under 20 pieces. It&rsquo;s relatively lean.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">20&ndash;50 pieces.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">50&ndash;150 pieces. It&rsquo;s comprehensive.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Over 150 pieces. It&rsquo;s an extensive library.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="10" data-module="habit" data-module-label="Habit Formation">
+        <div class="q-module">Habit Formation &mdash; Question 4 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">What happens to engagement between months 2 and 4 for most of your members?</div>
+          <div class="q-number">10</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">It drops significantly and I lose a lot of people in that window.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">It drops but I&rsquo;m not sure by how much.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">It drops for some members but I have responses that catch the worst cases.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Relatively stable. The habit has formed for most members by month 2.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Months 2&ndash;4 engagement is actively managed with a specific strategy for the post-novelty dip.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="11" data-module="habit" data-module-label="Habit Formation">
+        <div class="q-module">Habit Formation &mdash; Question 5 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Does your membership have a clear investment mechanic &mdash; something members put into it that makes leaving feel costly?</div>
+          <div class="q-number">11</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">No. Members put nothing in, so leaving costs them nothing.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">There&rsquo;s community participation but it&rsquo;s not structured.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">Members can track progress or build a profile, but it&rsquo;s basic.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Yes. Members invest meaningfully through progress tracking, saved work, or community reputation.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">The investment mechanic is deliberately designed. Members would feel genuine loss leaving it behind.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="12" data-module="habit" data-module-label="Habit Formation">
+        <div class="q-module">Habit Formation &mdash; Question 6 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">When your retention drops or MRR dips, what&rsquo;s your first response?</div>
+          <div class="q-number">12</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">I don&rsquo;t have a specific response. I watch and hope it recovers.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">I run a re-engagement or win-back campaign to lapsed members.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">I add new content, resources, or bonuses to give members more reason to stay.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">I look at the data and try to understand what changed before I respond.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">I have a specific diagnostic protocol &mdash; I identify whether it&rsquo;s an activation problem, engagement problem, or detection failure before I act.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="13" data-module="connection" data-module-label="Connection">
+        <div class="q-module">Connection &mdash; Question 1 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Do members in your membership know each other by name?</div>
+          <div class="q-number">13</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">No. It&rsquo;s essentially anonymous.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">A small handful of very active members do, but most don&rsquo;t interact.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">There&rsquo;s a community space but interactions are sporadic and surface-level.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Yes. Genuine peer-to-peer connection happens regularly.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Yes. Member relationships are a primary retention driver and I&rsquo;ve designed specifically for it.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="14" data-module="connection" data-module-label="Connection">
+        <div class="q-module">Connection &mdash; Question 2 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Without looking anything up right now, how many members could you name &mdash; and describe what they&rsquo;re working on?</div>
+          <div class="q-number">14</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">Very few. I know some names but not what they&rsquo;re working on.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">Maybe 5&ndash;10. I know the regulars but not the quiet majority.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">Around 20&ndash;30. The active members, yes. The rest are faces without context.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">A meaningful portion. I make it my business to know what members are trying to achieve.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">I know what a large proportion of my members are working on right now. It informs what I build and how I communicate.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="15" data-module="connection" data-module-label="Connection">
+        <div class="q-module">Connection &mdash; Question 3 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">When a member achieves a result or milestone, what happens?</div>
+          <div class="q-number">15</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">Nothing formal. Maybe they post about it themselves.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">I might see it and leave a comment or reaction.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">There&rsquo;s a space for wins but I don&rsquo;t actively facilitate the recognition.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Wins are visibly celebrated and members see others being recognised.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">There&rsquo;s a deliberate recognition system. Wins are celebrated publicly and consistently, creating a culture of shared progress.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="16" data-module="connection" data-module-label="Connection">
+        <div class="q-module">Connection &mdash; Question 4 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Does your membership have a shared identity &mdash; something that makes members feel they belong to something distinct?</div>
+          <div class="q-number">16</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">No. It&rsquo;s a content library, not a community.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">There&rsquo;s an implied identity but nothing explicit.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">There&rsquo;s a name or label for members but it&rsquo;s not really used or felt.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Yes. Members identify with being part of this membership and reference it.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Yes. Shared identity is strong. Members use the language, display the membership, and recruit others because of how it makes them feel.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="17" data-module="connection" data-module-label="Connection">
+        <div class="q-module">Connection &mdash; Question 5 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">If your community platform disappeared tomorrow, how many members would cancel within 30 days as a direct result?</div>
+          <div class="q-number">17</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">None. There&rsquo;s no real community to lose.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">Very few. Community isn&rsquo;t a meaningful retention driver right now.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">Some. A few engaged members would leave but most would stay for the content.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">A significant portion. Community is a real retention layer.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">A majority. The relationships members have built are the primary reason they stay.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="18" data-module="connection" data-module-label="Connection">
+        <div class="q-module">Connection &mdash; Question 6 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Do you have a regular format that brings members together in real time?</div>
+          <div class="q-number">18</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">No. Everything is async. Members consume content alone and that&rsquo;s the whole experience.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">Occasionally, but it&rsquo;s ad hoc and attendance is unpredictable.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">There are live sessions but they&rsquo;re primarily delivery-focused, not community-focused.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Yes. Regular gatherings where members interact with each other, not just with me.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Yes. The live format is a primary retention driver. Members attend for the people as much as the content.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="19" data-module="communication" data-module-label="Communication">
+        <div class="q-module">Communication &mdash; Question 1 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">How often do you communicate with members outside of content releases?</div>
+          <div class="q-number">19</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">Rarely or never. I let the content speak for itself.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">Irregularly &mdash; when I have something to announce or sell.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">On a loose schedule but it varies.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">On a consistent cadence that members can anticipate.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">On a deliberate rhythm that is part of the membership value itself, not just a delivery mechanism.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="20" data-module="communication" data-module-label="Communication">
+        <div class="q-module">Communication &mdash; Question 2 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">What is your average email open rate for member communications?</div>
+          <div class="q-estimate-hint">Estimate if you&rsquo;re not sure &mdash; best guess is fine.</div>
+          <div class="q-number">20</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">I don&rsquo;t track it, or it&rsquo;s below 15%.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">15&ndash;25%.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">25&ndash;35%.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">35&ndash;50%.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Above 50%, and I know why. The content earns it.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="21" data-module="communication" data-module-label="Communication">
+        <div class="q-module">Communication &mdash; Question 3 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Does your communication change based on where a member is in their journey?</div>
+          <div class="q-number">21</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">No. Everyone gets the same emails at the same time.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">New members get a welcome sequence but after that it&rsquo;s the same for everyone.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">There&rsquo;s some segmentation but it&rsquo;s basic.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Yes. Communication is meaningfully different for new, active, and at-risk members.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Communication is fully lifecycle-aware. What members receive depends on exactly where they are and what they need.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="22" data-module="communication" data-module-label="Communication">
+        <div class="q-module">Communication &mdash; Question 4 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">What is your average monthly unsubscribe rate from your member email list?</div>
+          <div class="q-estimate-hint">Estimate if you&rsquo;re not sure &mdash; best guess is fine.</div>
+          <div class="q-number">22</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">I don&rsquo;t track this.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">Above 1% per month.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">Around 0.5&ndash;1% per month.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Around 0.2&ndash;0.5% per month.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Below 0.2% per month. I monitor it as a retention signal and I know what drives it.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="23" data-module="communication" data-module-label="Communication">
+        <div class="q-module">Communication &mdash; Question 5 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">How do you handle billing communications &mdash; failed payments, upcoming renewals, receipts?</div>
+          <div class="q-number">23</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">Stripe handles it automatically. I&rsquo;ve never looked at those emails.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">Default platform emails go out. I haven&rsquo;t customised them.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">I&rsquo;ve customised the copy but it&rsquo;s still transactional in tone.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Billing communications are on-brand and human in tone.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Billing communications are part of the retention strategy. They reinforce value, reduce involuntary churn, and treat members like people, not transactions.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="24" data-module="communication" data-module-label="Communication">
+        <div class="q-module">Communication &mdash; Question 6 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Does your non-promotional communication have a defined purpose and editorial standard?</div>
+          <div class="q-number">24</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">No. I only communicate when there&rsquo;s something to announce or sell.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">I send value content occasionally but it&rsquo;s ad hoc.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">There&rsquo;s a loose approach but nothing documented or consistently applied.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Yes. Non-promotional communication has a clear purpose and I could articulate what standard it&rsquo;s held to.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">The editorial standard is documented, the purpose is defined, and members could tell you what to expect from it. It&rsquo;s a product, not a newsletter.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="25" data-module="detection" data-module-label="Detection">
+        <div class="q-module">Detection &mdash; Question 1 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">How do you currently know when a member is at risk of cancelling?</div>
+          <div class="q-number">25</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">I find out when they cancel.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">I notice if someone goes very quiet for a long time.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">I check engagement data occasionally and flag obvious cases.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">There are defined engagement thresholds that trigger a review.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">There&rsquo;s an automated scoring system that surfaces at-risk members before they self-identify as leaving.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="26" data-module="detection" data-module-label="Detection">
+        <div class="q-module">Detection &mdash; Question 2 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Can you distinguish between voluntary churn &mdash; a member chose to leave &mdash; and involuntary churn &mdash; a billing failure?</div>
+          <div class="q-number">26</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">No. They both show up the same way &mdash; as a lost member.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">I can see failed payments but I don&rsquo;t have a separate response for them.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">Yes, I can identify both but treat them the same way.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Yes, and I have different responses for each.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Yes. Voluntary and involuntary churn are tracked separately, reported separately, and have completely different intervention playbooks.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="27" data-module="detection" data-module-label="Detection">
+        <div class="q-module">Detection &mdash; Question 3 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">What is your current monthly churn rate, and how do you know?</div>
+          <div class="q-estimate-hint">Estimate if you&rsquo;re not sure &mdash; best guess is fine.</div>
+          <div class="q-number">27</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">I don&rsquo;t track it. I have no reliable number.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">A rough sense, not calculated. Probably above 7%.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">I calculate it occasionally. Somewhere between 4&ndash;7%.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">I calculate it monthly. Consistently between 2&ndash;4%.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Below 2%, tracked monthly, with a documented baseline I measure against.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="28" data-module="detection" data-module-label="Detection">
+        <div class="q-module">Detection &mdash; Question 4 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">What do members tell you when they cancel &mdash; and do you believe them?</div>
+          <div class="q-number">28</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">I don&rsquo;t collect exit reasons. I find out they&rsquo;re gone from the cancellation notification.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">They say money is tight or they don&rsquo;t have time to use it. That&rsquo;s the main pattern and I work with that.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">I send an exit survey but response rates are low and I&rsquo;m not sure how honest the answers are.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">I have exit data and use it to inform what I change, though I know it&rsquo;s self-reported.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">I&rsquo;ve validated my exit data against other signals. I know what members say and what they actually mean, and they&rsquo;re often not the same thing.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="29" data-module="detection" data-module-label="Detection">
+        <div class="q-module">Detection &mdash; Question 5 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">How do you track engagement across your membership &mdash; logins, content consumption, community participation?</div>
+          <div class="q-number">29</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">I don&rsquo;t have meaningful engagement tracking in place.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">I can see basic login data from my platform.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">I track logins and content views but don&rsquo;t combine them into a member health picture.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">I have a combined engagement score or view per member.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Each member has a health score that aggregates multiple engagement signals and I review it regularly.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="30" data-module="detection" data-module-label="Detection">
+        <div class="q-module">Detection &mdash; Question 6 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">When you reach out to a member you think might be at risk, what does that look like?</div>
+          <div class="q-number">30</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">I don&rsquo;t proactively reach out. I wait and see.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">A generic check-in email that goes to anyone who&rsquo;s been quiet.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">A personalised email acknowledging their silence and offering help.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">A personalised outreach referencing their specific situation with a concrete offer of support.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">A tiered intervention playbook. Different responses based on risk level, tenure, and what the engagement history says about why they&rsquo;re fading.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="31" data-module="ascension" data-module-label="Ascension">
+        <div class="q-module">Ascension &mdash; Question 1 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">What happens when a member achieves the main outcome your membership promises?</div>
+          <div class="q-number">31</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">They graduate and cancel. I lose my best members as a feature, not a bug.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">Some stay out of habit. Most leave eventually.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">I try to keep them engaged but there&rsquo;s no formal next step designed for them.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">There&rsquo;s a defined Stage 2 that&rsquo;s introduced before they complete Stage 1.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">The graduation problem is solved by design. Members move into a new mission before the old one is complete.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="32" data-module="ascension" data-module-label="Ascension">
+        <div class="q-module">Ascension &mdash; Question 2 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Do you have more than one tier, offer, or level within your membership?</div>
+          <div class="q-number">32</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">One price, one tier, everyone gets the same thing.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">Occasionally someone upgrades but I couldn&rsquo;t tell you how or why.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">Yes, there are tiers but they weren&rsquo;t designed as an ascension path.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Yes, and there&rsquo;s a clear value difference that makes upgrading genuinely attractive.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">The ascension architecture is deliberate. Tiers serve different stages of the member journey and each deepens the relationship.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="33" data-module="ascension" data-module-label="Ascension">
+        <div class="q-module">Ascension &mdash; Question 3 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">What proportion of your revenue comes from members who have been with you more than 12 months?</div>
+          <div class="q-number">33</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">I don&rsquo;t track member tenure or revenue by cohort. I have no idea.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">A rough sense, not measured. Long-term members feel like a small minority.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">Around 20&ndash;30% comes from members past the 12-month mark.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">40&ndash;60%. Long-term members are a meaningful and growing revenue base.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Above 60%. Long-term member revenue is the foundation and it grows over time.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="34" data-module="ascension" data-module-label="Ascension">
+        <div class="q-module">Ascension &mdash; Question 4 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Do you have add-ons, one-time offers, or premium experiences that members can buy without changing their core membership?</div>
+          <div class="q-number">34</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">No. One product, one price.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">I&rsquo;ve thought about it but haven&rsquo;t built anything.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">There&rsquo;s one additional offer but it&rsquo;s not positioned as an ascension step.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Yes. Multiple ways members can go deeper without a full tier upgrade.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">The add-on menu is designed to serve different member maturity levels and is a consistent secondary revenue stream.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="35" data-module="ascension" data-module-label="Ascension">
+        <div class="q-module">Ascension &mdash; Question 5 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Do your most engaged, longest-tenured members have a visible status or role that reflects their investment?</div>
+          <div class="q-number">35</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">No. A five-year member and a five-day member look identical.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">There are power users but no formal recognition or elevated status.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">Some informal recognition but it&rsquo;s not systematic.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Yes. There&rsquo;s a status layer that recognises tenure and engagement.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Status is a deliberate retention and ascension mechanism. Members aspire to it, work toward it, and stay partly because of it.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">Next &rarr;</button></div>
+      </div>
+
+      <div class="question-card" data-q="36" data-module="ascension" data-module-label="Ascension">
+        <div class="q-module">Ascension &mdash; Question 6 of 6</div>
+        <div class="q-text-wrap">
+          <div class="q-text">Is revenue per member growing over time, or is it flat?</div>
+          <div class="q-number">36</div>
+        </div>
+        <div class="options">
+          <div class="option" data-score="0"><span class="option-letter">A</span><span class="option-text">Flat or declining. Members pay the same or less over time.</span></div>
+          <div class="option" data-score="1"><span class="option-letter">B</span><span class="option-text">Flat. I&rsquo;ve never built a mechanism to grow it.</span></div>
+          <div class="option" data-score="2"><span class="option-letter">C</span><span class="option-text">Grows occasionally when I launch something new, but not systematically.</span></div>
+          <div class="option" data-score="3"><span class="option-letter">D</span><span class="option-text">Grows for engaged members as they take up offers and upgrades.</span></div>
+          <div class="option" data-score="4"><span class="option-letter">E</span><span class="option-text">Revenue per member grows predictably over time because the ascension architecture is working. My best members are worth multiples of what they started paying.</span></div>
+        </div>
+        <div class="q-nav"><button class="btn-back">&larr; Back</button><button class="btn-next">See my results &rarr;</button></div>
+      </div>
+
+    </div><!-- /questions-container -->
+
+    <div class="submitting-wrap" id="submitting-state">
+      <div class="submitting-eyebrow">Diagnostic complete</div>
+      <div class="submitting-title">Analysing your results</div>
+      <div class="submitting-sub">Running your membership through the framework&hellip;</div>
+    </div>
+
+  </div><!-- /quiz-area -->
+</div><!-- /diag-wrap -->
+`;
+
+      initDiagnostic(shadow);
+    }
+  }
+
+  customElements.define('me-diagnostic', MeDiagnostic);
+
+  function initDiagnostic(root) {
+
+    var modules     = ['activation','habit','connection','communication','detection','ascension'];
+    var scores      = { activation:0, habit:0, connection:0, communication:0, detection:0, ascension:0 };
+    var answers     = {};
+    var currentQ    = 1;
+    var totalQ      = 36;
+    var cpSeen      = {};   // tracks which checkpoints have been shown
+
+    // Phase labels
+    var phaseLabels = {
+      activation:    'Phase 1: Activation',
+      habit:         'Phase 2: Habit Formation',
+      connection:    'Phase 3: Connection',
+      communication: 'Phase 4: Communication',
+      detection:     'Phase 5: Detection',
+      ascension:     'Phase 6: Ascension'
+    };
+
+    // Checkpoint config: keyed by the question number that should show AFTER the checkpoint
+    var checkpoints = {
+      7:  { mod: 'activation',    eyebrow: 'MODULE 1 COMPLETE',           milestone: '' },
+      13: { mod: 'habit',         eyebrow: 'MODULE 2 COMPLETE',           milestone: '' },
+      19: { mod: 'connection',    eyebrow: 'HALFWAY POINT — MODULE 3 COMPLETE', milestone: 'Halfway point' },
+      25: { mod: 'communication', eyebrow: 'MODULE 4 COMPLETE',           milestone: '' },
+      31: { mod: 'detection',     eyebrow: 'FINAL SECTION AHEAD',         milestone: 'Final section' }
+    };
+
+    var checkpointCopy = {
+      activation: {
+        identityLow:  'The Leaky Onboarding System',
+        messageLow:   'Your Activation score is trending lower than average. This is where most memberships lose members before those members have even made a decision \u2014 not a dramatic exit, just a slow drift that compounds quietly. Let\u2019s keep going.',
+        messageHigh:  'Your Activation layer is tracking above average. The first 30 days are in better shape than most memberships we see. Let\u2019s see if that holds through the next sections.'
+      },
+      habit: {
+        identityLow:  'The Silent Churn Engine',
+        messageLow:   'Habit Formation is flagging. Members are getting past the initial excitement \u2014 but the return loop isn\u2019t strong enough to keep pulling them back. This is the most common mid-stage leak, and it\u2019s almost always fixable.',
+        messageHigh:  'Habit Formation is tracking well. Members are building the routine. Let\u2019s look at the community layer next.'
+      },
+      connection: {
+        identityLow:  'The Isolated Subscriber Problem',
+        messageLow:   'Three modules in. Connection is showing a gap \u2014 members are consuming without connecting. The cost of leaving is lower than it should be. At this point we can usually tell whether a retention problem is fixable or structural. Keep going.',
+        messageHigh:  'Three modules in. You\u2019re tracking above average across activation, habit, and connection. The second half tests where most operators have their biggest blind spots.'
+      },
+      communication: {
+        identityLow:  'The Broadcast Problem',
+        messageLow:   'Communication is flagging. The right message isn\u2019t reaching the right members at the right time. Most operators don\u2019t see this until engagement has already declined \u2014 and by then the habit is broken.',
+        messageHigh:  'Communication is tracking well. The final two sections \u2014 Detection and Ascension \u2014 are where most memberships have their biggest surprises.'
+      },
+      detection: {
+        identityLow:  'The Blind Spot',
+        messageLow:   'One module left. Your Detection score tells us something important: you\u2019re likely finding out members are at risk after they\u2019ve already decided to leave. The final section will show whether that\u2019s compounding.',
+        messageHigh:  'One module left: Ascension. Detection is in solid shape \u2014 you have better visibility than most. Let\u2019s see if you have a clear path for your best members, or if they\u2019re graduating themselves out.'
+      }
+    };
+
+    // Email — URL param first, sessionStorage fallback
+    var urlParams = new URLSearchParams(window.location.search);
+    var userEmail = urlParams.get('email') || '';
+    if (!userEmail) {
+      try { userEmail = sessionStorage.getItem('me_email') || ''; } catch(e) {}
+    }
+
+    var cards           = root.querySelectorAll('.question-card');
+    var progressFill    = root.querySelector('#progress-fill');
+    var progressCurrent = root.querySelector('#progress-current');
+    var progressModule  = root.querySelector('#progress-module');
+    var quizArea        = root.querySelector('#quiz-area');
+    var introScreen     = root.querySelector('#intro-screen');
+    var checkpointScreen = root.querySelector('#checkpoint-screen');
+
+    // --- INTRO SCREEN ---
+    root.querySelector('#btn-start').addEventListener('click', function() {
+      introScreen.style.display = 'none';
+      quizArea.style.display = 'block';
+      showCard(1);
+    });
+
+    // --- CHECKPOINT ---
+    function showCheckpoint(nextQ) {
+      var cp   = checkpoints[nextQ];
+      var mod  = cp.mod;
+      var copy = checkpointCopy[mod];
+      var sc   = scores[mod];
+      var isLow = sc <= 12;
+
+      root.querySelector('#cp-eyebrow').textContent  = cp.eyebrow;
+      root.querySelector('#cp-module-label').textContent = phaseLabels[mod];
+      root.querySelector('#cp-score-display').textContent = 'Score so far: ' + sc + '/24';
+
+      var identityEl = root.querySelector('#cp-identity');
+      if (isLow) {
+        identityEl.textContent     = copy.identityLow;
+        identityEl.style.display   = 'inline-block';
+      } else {
+        identityEl.style.display   = 'none';
+      }
+
+      root.querySelector('#cp-message').textContent = isLow ? copy.messageLow : copy.messageHigh;
+
+      // progress bar state
+      progressCurrent.textContent = cp.milestone ? cp.milestone : ('After module ' + (nextQ / 6 - 1));
+      progressFill.style.width    = (((nextQ - 1) / totalQ) * 100) + '%';
+
+      quizArea.style.display = 'none';
+      checkpointScreen.style.display = 'block';
+
+      var continueBtn = root.querySelector('#btn-continue');
+      var newBtn = continueBtn.cloneNode(true); // remove old listeners
+      continueBtn.parentNode.replaceChild(newBtn, continueBtn);
+      newBtn.addEventListener('click', function() {
+        checkpointScreen.style.display = 'none';
+        quizArea.style.display         = 'block';
+        cpSeen[nextQ] = true;
+        showCard(nextQ);
+      });
+    }
+
+    // --- SHOW CARD ---
+    function showCard(n) {
+      // Insert checkpoint before the first question of a new module (except ascension — show at end)
+      if (checkpoints[n] && !cpSeen[n]) {
+        showCheckpoint(n);
+        return;
+      }
+
+      cards.forEach(function(c) { c.classList.remove('active'); });
+      var card = root.querySelector('[data-q="' + n + '"]');
+      if (!card) return;
+      card.classList.add('active');
+
+      var mod = card.dataset.module;
+      var phaseLabel = phaseLabels[mod] || card.dataset.moduleLabel;
+      if (n === 19) phaseLabel = 'Phase 4: Communication \u00b7 Halfway';
+      if (n === 31) phaseLabel = 'Phase 6: Ascension \u00b7 Final section';
+
+      progressCurrent.textContent = 'Question ' + n + ' of ' + totalQ;
+      progressModule.textContent  = phaseLabel;
+      progressFill.style.width    = ((n - 1) / totalQ * 100) + '%';
+
+      if (answers[n] !== undefined) {
+        var opts = card.querySelectorAll('.option');
+        opts.forEach(function(o) {
+          o.classList.remove('selected');
+          if (parseInt(o.dataset.score) === answers[n]) o.classList.add('selected');
+        });
+        card.querySelector('.btn-next').classList.add('ready');
+      }
+    }
+
+    function initCard(card) {
+      var opts    = card.querySelectorAll('.option');
+      var btnNext = card.querySelector('.btn-next');
+      var btnBack = card.querySelector('.btn-back');
+      var qNum    = parseInt(card.dataset.q);
+      var mod     = card.dataset.module;
+
+      opts.forEach(function(opt) {
+        opt.addEventListener('click', function() {
+          opts.forEach(function(o) { o.classList.remove('selected'); });
+          opt.classList.add('selected');
+          answers[qNum] = parseInt(opt.dataset.score);
+          recalcModuleScore(mod);
+          btnNext.classList.add('ready');
+        });
+      });
+
+      btnNext.addEventListener('click', function() {
+        if (!btnNext.classList.contains('ready')) return;
+        if (qNum < totalQ) {
+          currentQ = qNum + 1;
+          showCard(currentQ);
+        } else {
+          showDirectResults();
+        }
+      });
+
+      if (btnBack) {
+        btnBack.addEventListener('click', function() {
+          if (qNum > 1) {
+            currentQ = qNum - 1;
+            // If we'd be going back to just after a checkpoint, skip past it
+            showCard(currentQ);
+          }
+        });
+      }
+    }
+
+    function recalcModuleScore(mod) {
+      var total = 0;
+      root.querySelectorAll('[data-module="' + mod + '"]').forEach(function(card) {
+        var n = parseInt(card.dataset.q);
+        if (answers[n] !== undefined) total += answers[n];
+      });
+      scores[mod] = total;
+    }
+
+    function showDirectResults() {
+      root.querySelector('#questions-container').style.display = 'none';
+      root.querySelector('#progress-wrap').style.display       = 'none';
+      root.querySelector('#submitting-state').style.display    = 'block';
+
+      var total    = 0;
+      modules.forEach(function(m) { total += scores[m]; });
+      var primary  = modules.reduce(function(a, b) { return scores[a] <= scores[b] ? a : b; });
+      var severity = total > 114 ? 'Healthy' : total > 84 ? 'Developing' : total > 48 ? 'At Risk' : 'Critical';
+
+      if (typeof window.fbq !== 'undefined') {
+        window.fbq('trackCustom', 'DiagnosticComplete', { score_total: total, primary_leak: primary, severity: severity });
+      }
+
+      fetch('https://member-engine-modules.vercel.app/api/submit-free', {
+        method: 'POST',
+        keepalive: true,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email:               userEmail || null,
+          score_activation:    scores.activation,
+          score_habit:         scores.habit,
+          score_connection:    scores.connection,
+          score_communication: scores.communication,
+          score_detection:     scores.detection,
+          score_ascension:     scores.ascension,
+          score_total:         total,
+          primary_leak:        primary,
+          severity:            severity,
+          referrer:            document.referrer || null,
+          user_agent:          navigator.userAgent || null
+        })
+      }).catch(function() {});
+
+      var resultParams = new URLSearchParams({
+        email: userEmail,
+        total: total,
+        primary: primary,
+        a:  scores.activation,
+        h:  scores.habit,
+        cn: scores.connection,
+        cm: scores.communication,
+        d:  scores.detection,
+        as: scores.ascension
+      });
+      setTimeout(function() {
+        window.location.href = 'https://memberengine.co/your-results?' + resultParams.toString();
+      }, 800);
+    }
+
+    cards.forEach(initCard);
+    // Don't call showCard(1) on init — wait for intro screen button
+  }
+
+})();
+</script>
+
+<me-diagnostic></me-diagnostic>
+
+</div>
