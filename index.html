@@ -1,0 +1,306 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+.mo-page *, .mo-page *::before, .mo-page *::after { box-sizing: border-box !important; margin: 0; padding: 0; }
+
+.mo-page {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  background: #FAF9F7;
+  color: #111827;
+  font-size: 17px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  text-align: left !important;
+}
+
+/* NAV */
+.mo-nav {
+  background: #FFFFFF;
+  border-bottom: 1px solid #E5E1DA;
+  padding: 0 24px;
+  height: 60px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+}
+.mo-nav-logo { font-size: 18px; font-weight: 800 !important; letter-spacing: -0.5px; color: #111827 !important; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important; text-decoration: none !important; }
+.mo-nav-logo span { color: #047857 !important; }
+
+/* HERO */
+.mo-hero { background: #FFFFFF; padding: 64px 24px 56px; text-align: center !important; width: 100%; }
+.mo-hero-eyebrow { display: inline-block !important; background: #ecfdf5; color: #047857 !important; font-size: 12px; font-weight: 700 !important; letter-spacing: 1.5px; text-transform: uppercase; padding: 6px 14px; border-radius: 100px; margin-bottom: 24px; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important; }
+.mo-hero h1 { font-size: 34px !important; font-weight: 800 !important; line-height: 1.15 !important; letter-spacing: -1.5px; max-width: 640px; margin: 0 auto 20px; color: #111827 !important; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important; text-align: center !important; word-break: break-word; overflow-wrap: break-word; }
+.mo-hero h1 em { font-style: normal !important; color: #047857 !important; }
+.mo-hero-sub { font-size: 17px; color: #4B5563 !important; max-width: 540px; margin: 0 auto 36px; font-weight: 400; text-align: center !important; }
+
+/* FORM CARD */
+.mo-form-card { background: #FFFFFF; border: 1px solid #E5E1DA !important; border-radius: 16px; padding: 32px 28px; max-width: 460px; margin: 0 auto; box-shadow: 0 4px 24px rgba(4,120,87,0.07); }
+.mo-form-label { display: block !important; font-size: 13px; font-weight: 600 !important; color: #4B5563 !important; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; text-align: left !important; }
+.mo-form-input { width: 100% !important; padding: 14px 16px; border: 1.5px solid #E5E1DA !important; border-radius: 10px; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important; font-size: 16px; color: #111827 !important; background: #FAF9F7 !important; margin-bottom: 14px; display: block !important; text-align: left !important; outline: none; transition: border-color 0.15s; }
+.mo-form-input:focus { border-color: #047857 !important; background: #FFFFFF !important; }
+.mo-form-input::placeholder { color: #9CA3AF; }
+.mo-form-btn { width: 100% !important; background: #047857 !important; color: #FFFFFF !important; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important; font-size: 16px; font-weight: 700 !important; padding: 16px; border: none !important; border-radius: 10px; cursor: pointer; letter-spacing: -0.2px; display: block !important; text-align: center !important; transition: opacity 0.15s; }
+.mo-form-btn:hover { opacity: 0.9; }
+.mo-form-next-line { text-align: center !important; font-size: 13px; color: #4B5563 !important; margin-top: 12px; font-weight: 500 !important; }
+.mo-form-disclaimer { text-align: center !important; font-size: 12px; color: #9CA3AF !important; margin-top: 8px; }
+.mo-form-error { display: none; font-size: 13px; color: #DC2626 !important; margin-bottom: 10px; text-align: left !important; font-weight: 500 !important; }
+
+/* PROOF BAR */
+.mo-proof-bar { padding: 24px; text-align: center !important; background: #FFFFFF; border-top: 1px solid #E5E1DA; width: 100%; }
+.mo-proof-row { display: flex !important; flex-direction: column; justify-content: center; align-items: center; gap: 14px; max-width: 640px; margin: 0 auto; }
+.mo-proof-item { font-size: 13px; font-weight: 600 !important; color: #4B5563 !important; display: flex !important; align-items: center; gap: 7px; justify-content: center; }
+.mo-proof-item svg { flex-shrink: 0; }
+
+/* QUALIFIER STRIP */
+.mo-qualifier { background: #F3F0EC; border-top: 1px solid #E5E1DA; padding: 14px 24px; text-align: center !important; font-size: 13px; color: #6B7280 !important; font-weight: 500 !important; }
+.mo-qualifier strong { color: #047857 !important; font-weight: 700 !important; }
+
+/* COPY SECTION */
+.mo-copy-section { max-width: 660px; margin: 0 auto; padding: 64px 24px; }
+.mo-copy-section p { margin-bottom: 20px; color: #111827 !important; font-size: 17px; line-height: 1.75; text-align: left !important; }
+.mo-copy-section p:last-child { margin-bottom: 0; }
+.mo-copy-section b { font-weight: 700 !important; }
+.mo-stat-callout { background: #FFFFFF; border: 1px solid #E5E1DA !important; border-left: 4px solid #047857 !important; border-radius: 0 12px 12px 0; padding: 20px 24px; margin: 28px 0; font-size: 16px; color: #111827 !important; text-align: left !important; }
+.mo-stat-callout strong { color: #047857 !important; font-size: 32px; font-weight: 800 !important; display: block !important; letter-spacing: -1px; line-height: 1.1; margin-bottom: 6px; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important; }
+
+/* ELEMENTS SECTION */
+.mo-elements-section { background: #F3F0EC; padding: 64px 24px; text-align: center !important; width: 100%; }
+.mo-elements-label { font-size: 11px !important; font-weight: 700 !important; letter-spacing: 2px; text-transform: uppercase; color: #047857 !important; margin-bottom: 14px; display: block !important; text-align: center !important; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important; }
+.mo-elements-section h2 { font-size: 28px !important; font-weight: 800 !important; letter-spacing: -1px; max-width: 540px; margin: 0 auto 40px; line-height: 1.2 !important; color: #111827 !important; text-align: center !important; word-break: break-word; overflow-wrap: break-word; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important; }
+.mo-elements-grid { display: flex !important; flex-wrap: wrap; gap: 14px; max-width: 900px; margin: 0 auto; }
+.mo-element-card { background: #FFFFFF !important; border: 1px solid #E5E1DA !important; border-radius: 12px; padding: 22px 18px; text-align: left !important; flex: 1 1 160px; min-width: 0; }
+.mo-element-num { font-size: 10px !important; font-weight: 700 !important; letter-spacing: 1.5px; text-transform: uppercase; color: #047857 !important; margin-bottom: 8px; display: block; text-align: left !important; }
+.mo-element-card h3 { font-size: 15px !important; font-weight: 700 !important; color: #111827 !important; margin-bottom: 6px; letter-spacing: -0.3px; text-align: left !important; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important; }
+.mo-element-card p { font-size: 13px; color: #4B5563 !important; line-height: 1.5; text-align: left !important; }
+
+/* TESTIMONIAL */
+.mo-testimonial-section { padding: 64px 24px; max-width: 660px; margin: 0 auto; }
+.mo-testimonial-card { background: #FFFFFF; border: 1px solid #E5E1DA !important; border-radius: 16px; padding: 32px 28px; }
+.mo-quote-mark { font-size: 56px !important; line-height: 1 !important; color: #047857 !important; font-family: Georgia, serif !important; margin-bottom: 14px; display: block !important; text-align: left !important; }
+.mo-testimonial-card blockquote { font-size: 19px; font-weight: 600 !important; line-height: 1.5; color: #111827 !important; letter-spacing: -0.3px; margin-bottom: 22px; font-style: normal !important; text-align: left !important; }
+.mo-testimonial-card cite { font-style: normal !important; font-size: 14px; font-weight: 600 !important; color: #4B5563 !important; display: flex !important; align-items: center; gap: 10px; text-align: left !important; }
+.mo-cite-dot { width: 6px; height: 6px; border-radius: 50%; background: #047857; flex-shrink: 0; display: inline-block; }
+
+/* BOTTOM CTA */
+.mo-bottom-cta { background: #052e16; padding: 72px 24px; text-align: center !important; width: 100%; }
+.mo-bottom-cta h2 { font-size: 30px !important; font-weight: 800 !important; color: #FFFFFF !important; letter-spacing: -1px; max-width: 580px; margin: 0 auto 16px; line-height: 1.2 !important; text-align: center !important; word-break: break-word; overflow-wrap: break-word; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important; }
+.mo-bottom-cta p { color: #9CA3AF !important; font-size: 16px; max-width: 420px; margin: 0 auto 36px; text-align: center !important; }
+.mo-bottom-form { display: flex !important; flex-direction: column; gap: 10px; max-width: 420px; margin: 0 auto; }
+.mo-bottom-input { width: 100% !important; padding: 15px 18px; border: 1.5px solid #064E3B !important; background: #064E3B !important; color: #FFFFFF !important; border-radius: 10px; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important; font-size: 15px; outline: none; text-align: left !important; transition: border-color 0.15s; }
+.mo-bottom-input::placeholder { color: #6ee7b7; }
+.mo-bottom-input:focus { border-color: #6ee7b7 !important; }
+.mo-bottom-btn { width: 100% !important; background: #059669 !important; color: #FFFFFF !important; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important; font-size: 15px; font-weight: 700 !important; padding: 15px 28px; border: none !important; border-radius: 10px; cursor: pointer; display: block !important; text-align: center !important; transition: opacity 0.15s; }
+.mo-bottom-btn:hover { opacity: 0.9; }
+.mo-bottom-next-line { color: #6ee7b7 !important; font-size: 13px; font-weight: 500 !important; margin-top: 10px; text-align: center !important; }
+.mo-bottom-disclaimer { color: #4B5563 !important; font-size: 12px; margin-top: 8px; text-align: center !important; }
+
+/* FOOTER */
+.mo-footer { background: #FFFFFF; border-top: 1px solid #E5E1DA; padding: 24px; text-align: center !important; font-size: 13px; color: #9CA3AF !important; width: 100%; }
+</style>
+
+<div class="mo-page">
+
+  <!-- NAV -->
+  <div class="mo-nav">
+    <div class="mo-nav-logo">Member<span>Engine</span></div>
+  </div>
+
+  <!-- HERO -->
+  <section class="mo-hero">
+    <div class="mo-hero-eyebrow">Free Retention Diagnostic</div>
+    <h1 style="text-align:center !important; word-break:break-word; overflow-wrap:break-word; max-width:100%;">Find the exact point your members are slipping through &mdash; and why it&rsquo;s <em>not what you think</em></h1>
+    <p class="mo-hero-sub" style="text-align:center !important;">Most churn isn&rsquo;t where you think it is. This shows you exactly where your system is breaking.</p>
+
+    <div class="mo-form-card">
+      <label class="mo-form-label" for="mo-email-hero">Your email address</label>
+      <div class="mo-form-error" id="mo-error-hero">Please enter a valid email address.</div>
+      <input class="mo-form-input" type="email" id="mo-email-hero" name="email" placeholder="you@yourmembership.com">
+      <button class="mo-form-btn" type="button" id="mo-btn-hero">Find my biggest leak &rarr;</button>
+      <p class="mo-form-next-line">Next: answer a few quick questions &rarr; get your personalised breakdown</p>
+      <p class="mo-form-disclaimer">Takes a few minutes. No spam &mdash; just your results.</p>
+    </div>
+  </section>
+
+  <!-- PROOF BAR -->
+  <div class="mo-proof-bar">
+    <div class="mo-proof-row">
+      <div class="mo-proof-item">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#047857" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="#047857" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Free &mdash; no credit card
+      </div>
+      <div class="mo-proof-item">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#047857" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="#047857" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Results personalised to your answers
+      </div>
+      <div class="mo-proof-item">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#047857" stroke-width="1.5"/><path d="M5 8.5L7 10.5L11 6" stroke="#047857" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        You&rsquo;ll see exactly which part of your system is failing
+      </div>
+    </div>
+  </div>
+
+  <!-- QUALIFIER -->
+  <div class="mo-qualifier">
+    <strong>Built for membership owners doing $5k&ndash;$100k/month</strong> who want to stop losing members to problems they haven&rsquo;t correctly identified yet.
+  </div>
+
+  <!-- COPY -->
+  <section class="mo-copy-section">
+    <p>Every billing cycle, you watch the cancellations come in &mdash; and you don&rsquo;t really know why.</p>
+    <p>You check the number. You do the math. You tell yourself it&rsquo;s seasonal, or the economy, or that some members just weren&rsquo;t committed enough.</p>
+    <p>You&rsquo;ve probably asked ChatGPT why people are leaving. It gave you ideas &mdash; but nothing that could diagnose <em>your</em> membership.</p>
+    <p>That&rsquo;s exactly what this does. You&rsquo;ll see exactly which part of your system is failing, what&rsquo;s causing it, and what to fix first.</p>
+
+    <div class="mo-stat-callout">
+      <strong>Up to 40%</strong>
+      of membership churn has nothing to do with members choosing to leave. Cards expire. Banks decline. PayPal accounts close. Members fall out without meaning to &mdash; and never come back, because nobody caught it in time.
+    </div>
+
+    <p>That&rsquo;s just one of <b>six ways</b> a membership loses members.</p>
+    <p><b>Most membership owners are only ever working on one or two of them.</b> Which means they keep treating symptoms while the actual leak keeps running.</p>
+    <p>This diagnostic maps all six against your membership. Your personalised results &mdash; which element is failing, what&rsquo;s driving it, and what to fix first &mdash; land in your inbox within minutes of completing it.</p>
+    <p>Drop your email and let&rsquo;s find your leak.</p>
+  </section>
+
+  <!-- FRAMEWORK ELEMENTS -->
+  <section class="mo-elements-section">
+    <span class="mo-elements-label">What gets diagnosed</span>
+    <h2>Six ways memberships lose people. Most membership owners are only watching one.</h2>
+    <div class="mo-elements-grid">
+      <div class="mo-element-card">
+        <div class="mo-element-num">Element 01</div>
+        <h3>Activation</h3>
+        <p>What happens in the first 48 hours matters more than what happened in your ad.</p>
+      </div>
+      <div class="mo-element-card">
+        <div class="mo-element-num">Element 02</div>
+        <h3>Habit Formation</h3>
+        <p>Members who build a ritual stay. Members who don&rsquo;t cancel after month three.</p>
+      </div>
+      <div class="mo-element-card">
+        <div class="mo-element-num">Element 03</div>
+        <h3>Connection</h3>
+        <p>People stay for other people, not products. The difference between a community and a forum with notifications off.</p>
+      </div>
+      <div class="mo-element-card">
+        <div class="mo-element-num">Element 04</div>
+        <h3>Communication</h3>
+        <p>Most memberships email too rarely when members are new and too much when they&rsquo;re disengaging.</p>
+      </div>
+      <div class="mo-element-card">
+        <div class="mo-element-num">Element 05</div>
+        <h3>Detection</h3>
+        <p>By the time they cancel, they&rsquo;ve already left. This element is about seeing it before it happens.</p>
+      </div>
+      <div class="mo-element-card">
+        <div class="mo-element-num">Element 06</div>
+        <h3>Ascension</h3>
+        <p>When a member achieves their goal, what&rsquo;s next? No answer to that question is a retention problem.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIAL -->
+  <section class="mo-testimonial-section">
+    <div class="mo-testimonial-card">
+      <span class="mo-quote-mark">&ldquo;</span>
+      <blockquote>It&rsquo;s like finding the leaks in the bucket &mdash; but not just identifying them, actually giving you what you need to fix them.</blockquote>
+      <cite>
+        <div class="mo-cite-dot"></div>
+        Katie &nbsp;&middot;&nbsp; The Change Box
+      </cite>
+    </div>
+  </section>
+
+  <!-- BOTTOM CTA -->
+  <section class="mo-bottom-cta">
+    <h2 style="text-align:center !important;">Most memberships are fixing the wrong retention problem. Find the real one.</h2>
+    <p style="text-align:center !important;">Free. Takes a few minutes. Results personalised to your specific membership.</p>
+    <div class="mo-bottom-form">
+      <input class="mo-bottom-input" type="email" id="mo-email-bottom" placeholder="your@email.com">
+      <button class="mo-bottom-btn" type="button" id="mo-btn-bottom">Find my biggest leak &rarr;</button>
+    </div>
+    <p class="mo-bottom-next-line">Next: a few quick questions &rarr; your personalised breakdown</p>
+    <p class="mo-bottom-disclaimer">No spam. Just your results.</p>
+  </section>
+
+  <!-- FOOTER -->
+  <div class="mo-footer">
+    &copy; 2026 Member Engine &nbsp;&middot;&nbsp; Privacy Policy
+  </div>
+
+</div>
+
+<script>
+(function() {
+  document.documentElement.style.scrollBehavior = 'smooth';
+
+  // DIAGNOSTIC URL — update to live Systeme.io diagnostic page URL
+  var DIAGNOSTIC_URL = 'https://memberengine.co/take-diagnostic';
+
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  }
+
+  function submitEmail(emailInput, errorEl) {
+    var email = emailInput.value.trim();
+    if (!isValidEmail(email)) {
+      if (errorEl) { errorEl.style.display = 'block'; }
+      emailInput.focus();
+      return;
+    }
+    if (errorEl) { errorEl.style.display = 'none'; }
+
+    // Store in sessionStorage — diagnostic reads this as fallback if URL param fails
+    try { sessionStorage.setItem('me_email', email); } catch(e) {}
+
+    // Silent POST to Systeme CRM — creates contact and triggers opt-in automation
+    // mode: 'no-cors' because we're cross-origin; request fires and contact is created,
+    // response is opaque but we don't need to read it
+    try {
+      var tz = 'Australia/Sydney';
+      try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch(e) {}
+      fetch('https://steve-j-forrester.systeme.io/eb79ec72', {
+        method: 'POST',
+        mode: 'no-cors',
+        keepalive: true,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          optin: {
+            fields: { email: email },
+            timeZone: tz,
+            popupId: null,
+            isDesktop: window.innerWidth > 800,
+            entityId: '8ee26fca-7b21-49c7-9805-d1569f477aa8',
+            checkBoxIds: []
+          }
+        })
+      });
+    } catch(e) {}
+
+    // Redirect to diagnostic with email in URL param
+    var redirectUrl = DIAGNOSTIC_URL + '?email=' + encodeURIComponent(email);
+    window.location.href = redirectUrl;
+  }
+
+  var heroBtn   = document.getElementById('mo-btn-hero');
+  var heroInput = document.getElementById('mo-email-hero');
+  var heroError = document.getElementById('mo-error-hero');
+  var bottomBtn   = document.getElementById('mo-btn-bottom');
+  var bottomInput = document.getElementById('mo-email-bottom');
+
+  if (heroBtn) {
+    heroBtn.addEventListener('click', function() { submitEmail(heroInput, heroError); });
+    heroInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') submitEmail(heroInput, heroError); });
+  }
+  if (bottomBtn) {
+    bottomBtn.addEventListener('click', function() { submitEmail(bottomInput, null); });
+    bottomInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') submitEmail(bottomInput, null); });
+  }
+})();
+</script>
