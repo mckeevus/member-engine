@@ -985,7 +985,7 @@
         window.fbq('trackCustom', 'DiagnosticComplete', { score_total: total, primary_leak: primary, severity: severity });
       }
 
-      fetch('https://member-engine-modules.vercel.app/api/submit-free', {
+      fetch('https://member-engine.vercel.app/api/submit-free', {
         method: 'POST',
         keepalive: true,
         headers: { 'Content-Type': 'application/json' },
