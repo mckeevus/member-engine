@@ -10,24 +10,23 @@ const SYSTEME_TAG_IDS = {
   'weak-ascension':      1967677,
 };
 
-async function syncToSysteme(email, primaryLeak) {
+async function syncToSysteme(email, primaryLeak, severity, scoreTotal) {
   if (!email || !process.env.SYSTEME_API_KEY) return;
 
   const BASE = 'https://api.systeme.io/api';
   const KEY  = process.env.SYSTEME_API_KEY;
 
-  const newTagIds = [
-    SYSTEME_TAG_IDS['diagnostic-complete'],
-    SYSTEME_TAG_IDS[`weak-${primaryLeak}`],
-  ].filter(Boolean);
-
-  const tagsPayload = newTagIds.map(id => ({ id }));
+  const fields = [
+    { slug: 'primary_leak',  value: primaryLeak  ?? '' },
+    { slug: 'severity',      value: severity      ?? '' },
+    { slug: 'score_total',   value: String(scoreTotal ?? '') },
+  ].filter(f => f.value !== '');
 
   // Try to create contact
   const createRes = await fetch(`${BASE}/contacts`, {
     method: 'POST',
     headers: { 'X-API-Key': KEY, 'Content-Type': 'application/json', 'accept': 'application/json' },
-    body: JSON.stringify({ email, tags: tagsPayload }),
+    body: JSON.stringify({ email, fields }),
   });
 
   if (createRes.ok) return;
@@ -36,7 +35,7 @@ async function syncToSysteme(email, primaryLeak) {
   const alreadyExists = createData.violations?.some(v => v.message?.includes('already used'));
   if (!alreadyExists) return;
 
-  // Contact exists — find it, merge tags, patch
+  // Contact exists — find it and patch fields
   const searchRes = await fetch(`${BASE}/contacts?email=${encodeURIComponent(email)}`, {
     headers: { 'X-API-Key': KEY, 'accept': 'application/json' },
   });
@@ -44,14 +43,10 @@ async function syncToSysteme(email, primaryLeak) {
   const contact = searchData.items?.[0];
   if (!contact) return;
 
-  const existingIds = new Set(contact.tags.map(t => t.id));
-  newTagIds.forEach(id => existingIds.add(id));
-  const mergedTags = Array.from(existingIds).map(id => ({ id }));
-
   await fetch(`${BASE}/contacts/${contact.id}`, {
     method: 'PATCH',
     headers: { 'X-API-Key': KEY, 'Content-Type': 'application/merge-patch+json', 'accept': 'application/json' },
-    body: JSON.stringify({ tags: mergedTags }),
+    body: JSON.stringify({ fields }),
   });
 }
 
@@ -113,7 +108,7 @@ module.exports = async (req, res) => {
 
   // Systeme.io sync
   try {
-    await syncToSysteme(email, primary_leak);
+    await syncToSysteme(email, primary_leak, severity, score_total);
   } catch (err) {
     console.error('systeme sync error:', err.message);
   }
