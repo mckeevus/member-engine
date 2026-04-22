@@ -10,6 +10,14 @@ const SYSTEME_TAG_IDS = {
   'weak-ascension':      1967677,
 };
 
+async function applyTag(contactId, tagId, BASE, KEY) {
+  await fetch(`${BASE}/contacts/${contactId}/tags`, {
+    method: 'POST',
+    headers: { 'X-API-Key': KEY, 'Content-Type': 'application/json', 'accept': 'application/json' },
+    body: JSON.stringify({ tagId }),
+  });
+}
+
 async function syncToSysteme(email, primaryLeak, severity, scoreTotal) {
   if (!email || !process.env.SYSTEME_API_KEY) return;
 
@@ -22,6 +30,8 @@ async function syncToSysteme(email, primaryLeak, severity, scoreTotal) {
     { slug: 'score_total',   value: String(scoreTotal ?? '') },
   ].filter(f => f.value !== '');
 
+  const weakTag = primaryLeak ? SYSTEME_TAG_IDS[`weak-${primaryLeak}`] : null;
+
   // Try to create contact
   const createRes = await fetch(`${BASE}/contacts`, {
     method: 'POST',
@@ -29,13 +39,20 @@ async function syncToSysteme(email, primaryLeak, severity, scoreTotal) {
     body: JSON.stringify({ email, fields }),
   });
 
-  if (createRes.ok) return;
+  if (createRes.ok) {
+    const created = await createRes.json();
+    if (created?.id) {
+      await applyTag(created.id, SYSTEME_TAG_IDS['diagnostic-complete'], BASE, KEY);
+      if (weakTag) await applyTag(created.id, weakTag, BASE, KEY);
+    }
+    return;
+  }
 
   const createData = await createRes.json();
   const alreadyExists = createData.violations?.some(v => v.message?.includes('already used'));
   if (!alreadyExists) return;
 
-  // Contact exists — find it and patch fields
+  // Contact exists — find it, patch fields, apply tags
   const searchRes = await fetch(`${BASE}/contacts?email=${encodeURIComponent(email)}`, {
     headers: { 'X-API-Key': KEY, 'accept': 'application/json' },
   });
@@ -48,6 +65,9 @@ async function syncToSysteme(email, primaryLeak, severity, scoreTotal) {
     headers: { 'X-API-Key': KEY, 'Content-Type': 'application/merge-patch+json', 'accept': 'application/json' },
     body: JSON.stringify({ fields }),
   });
+
+  await applyTag(contact.id, SYSTEME_TAG_IDS['diagnostic-complete'], BASE, KEY);
+  if (weakTag) await applyTag(contact.id, weakTag, BASE, KEY);
 }
 
 module.exports = async (req, res) => {
