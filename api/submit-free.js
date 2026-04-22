@@ -1,14 +1,16 @@
 const { createClient } = require('@supabase/supabase-js');
 
 const SYSTEME_TAG_IDS = {
+  'diagnostic-optin':    1967652,
   'diagnostic-complete': 1967671,
-  'diagnostic-opt-in':   1967678,
   'weak-activation':     1967672,
   'weak-habit':          1967673,
   'weak-connection':     1967674,
   'weak-communication':  1967675,
   'weak-detection':      1967676,
   'weak-ascension':      1967677,
+  'purchased-27':        1967678,
+  'purchased-197':       1967679,
 };
 
 async function applyTag(contactId, tagId, BASE, KEY) {
@@ -57,7 +59,7 @@ async function syncToSysteme(email, primaryLeak, severity, scoreTotal, moduleSco
     const created = await createRes.json();
     if (created?.id) {
       await applyTag(created.id, SYSTEME_TAG_IDS['diagnostic-complete'], BASE, KEY);
-      await removeTag(created.id, SYSTEME_TAG_IDS['diagnostic-opt-in'], BASE, KEY);
+      await removeTag(created.id, SYSTEME_TAG_IDS['diagnostic-optin'], BASE, KEY);
       if (weakTag) await applyTag(created.id, weakTag, BASE, KEY);
     }
     return;
@@ -82,7 +84,7 @@ async function syncToSysteme(email, primaryLeak, severity, scoreTotal, moduleSco
   });
 
   await applyTag(contact.id, SYSTEME_TAG_IDS['diagnostic-complete'], BASE, KEY);
-  await removeTag(contact.id, SYSTEME_TAG_IDS['diagnostic-opt-in'], BASE, KEY);
+  await removeTag(contact.id, SYSTEME_TAG_IDS['diagnostic-optin'], BASE, KEY);
   if (weakTag) await applyTag(contact.id, weakTag, BASE, KEY);
 }
 
