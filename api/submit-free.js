@@ -25,9 +25,8 @@ async function syncToSysteme(email, primaryLeak, severity, scoreTotal) {
   const KEY  = process.env.SYSTEME_API_KEY;
 
   const fields = [
-    { slug: 'primary_leak',  value: primaryLeak  ?? '' },
-    { slug: 'severity',      value: severity      ?? '' },
-    { slug: 'score_total',   value: String(scoreTotal ?? '') },
+    { slug: 'primary_leak', value: primaryLeak ?? '' },
+    { slug: 'score_total',  value: String(scoreTotal ?? '') },
   ].filter(f => f.value !== '');
 
   const weakTag = primaryLeak ? SYSTEME_TAG_IDS[`weak-${primaryLeak}`] : null;
