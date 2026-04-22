@@ -2,6 +2,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 const SYSTEME_TAG_IDS = {
   'diagnostic-complete': 1967671,
+  'diagnostic-opt-in':   1967678,
   'weak-activation':     1967672,
   'weak-habit':          1967673,
   'weak-connection':     1967674,
@@ -18,16 +19,30 @@ async function applyTag(contactId, tagId, BASE, KEY) {
   });
 }
 
-async function syncToSysteme(email, primaryLeak, severity, scoreTotal) {
+async function removeTag(contactId, tagId, BASE, KEY) {
+  await fetch(`${BASE}/contacts/${contactId}/tags/${tagId}`, {
+    method: 'DELETE',
+    headers: { 'X-API-Key': KEY, 'accept': 'application/json' },
+  });
+}
+
+async function syncToSysteme(email, primaryLeak, severity, scoreTotal, moduleScores) {
   if (!email || !process.env.SYSTEME_API_KEY) return;
 
   const BASE = 'https://api.systeme.io/api';
   const KEY  = process.env.SYSTEME_API_KEY;
 
   const fields = [
-    { slug: 'primary_leak', value: primaryLeak ?? '' },
-    { slug: 'score_total',  value: String(scoreTotal ?? '') },
-  ].filter(f => f.value !== '');
+    { slug: 'primary_leak',        value: primaryLeak               ?? '' },
+    { slug: 'severity',            value: severity                  ?? '' },
+    { slug: 'score_total',         value: String(scoreTotal         ?? '') },
+    { slug: 'score_activation',    value: String(moduleScores.activation    ?? '') },
+    { slug: 'score_habit',         value: String(moduleScores.habit         ?? '') },
+    { slug: 'score_connection',    value: String(moduleScores.connection    ?? '') },
+    { slug: 'score_communication', value: String(moduleScores.communication ?? '') },
+    { slug: 'score_detection',     value: String(moduleScores.detection     ?? '') },
+    { slug: 'score_ascension',     value: String(moduleScores.ascension     ?? '') },
+  ].filter(f => f.value !== '' && f.value !== 'null' && f.value !== 'undefined');
 
   const weakTag = primaryLeak ? SYSTEME_TAG_IDS[`weak-${primaryLeak}`] : null;
 
@@ -42,6 +57,7 @@ async function syncToSysteme(email, primaryLeak, severity, scoreTotal) {
     const created = await createRes.json();
     if (created?.id) {
       await applyTag(created.id, SYSTEME_TAG_IDS['diagnostic-complete'], BASE, KEY);
+      await removeTag(created.id, SYSTEME_TAG_IDS['diagnostic-opt-in'], BASE, KEY);
       if (weakTag) await applyTag(created.id, weakTag, BASE, KEY);
     }
     return;
@@ -51,7 +67,7 @@ async function syncToSysteme(email, primaryLeak, severity, scoreTotal) {
   const alreadyExists = createData.violations?.some(v => v.message?.includes('already used'));
   if (!alreadyExists) return;
 
-  // Contact exists — find it, patch fields, apply tags
+  // Contact exists — find it, patch fields, apply/remove tags
   const searchRes = await fetch(`${BASE}/contacts?email=${encodeURIComponent(email)}`, {
     headers: { 'X-API-Key': KEY, 'accept': 'application/json' },
   });
@@ -66,6 +82,7 @@ async function syncToSysteme(email, primaryLeak, severity, scoreTotal) {
   });
 
   await applyTag(contact.id, SYSTEME_TAG_IDS['diagnostic-complete'], BASE, KEY);
+  await removeTag(contact.id, SYSTEME_TAG_IDS['diagnostic-opt-in'], BASE, KEY);
   if (weakTag) await applyTag(contact.id, weakTag, BASE, KEY);
 }
 
@@ -127,7 +144,14 @@ module.exports = async (req, res) => {
 
   // Systeme.io sync
   try {
-    await syncToSysteme(email, primary_leak, severity, score_total);
+    await syncToSysteme(email, primary_leak, severity, score_total, {
+      activation:    score_activation,
+      habit:         score_habit,
+      connection:    score_connection,
+      communication: score_communication,
+      detection:     score_detection,
+      ascension:     score_ascension,
+    });
   } catch (err) {
     console.error('systeme sync error:', err.message);
   }
