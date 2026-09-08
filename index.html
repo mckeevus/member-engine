@@ -6,6 +6,25 @@
   <meta name="description" content="Member Engine runs targeted win-back campaigns for gyms, fitness studios and martial arts schools.">
   <meta name="theme-color" content="#10162f">
   <title>Member Engine — Win back your lost members</title>
+  <script>
+    (function (s, e, n, d, er) {
+      s['Sender'] = er;
+      s[er] = s[er] || function () {
+        (s[er].q = s[er].q || []).push(arguments);
+      };
+      s[er].l = 1 * new Date();
+      s[er].on = function (event, callback) {
+        s[er].listeners = s[er].listeners || {};
+        (s[er].listeners[event] = s[er].listeners[event] || []).push(callback);
+      };
+      var a = e.createElement(n);
+      var m = e.getElementsByTagName(n)[0];
+      a.async = 1;
+      a.src = d;
+      m.parentNode.insertBefore(a, m);
+    })(window, document, 'script', 'https://cdn.sender.net/accounts_resources/universal.js', 'sender');
+    sender('73fcaa66700776');
+  </script>
   <style>
     :root {
       --ink: #10162f;
@@ -644,6 +663,21 @@
     .form-status { color: var(--acid) !important; font-weight: 750; }
     .form-status.is-error { color: #ffb4b4 !important; }
 
+    .sender-form-field {
+      width: min(100%, 650px);
+      margin: 0 auto;
+    }
+
+    .final-cta .sender-privacy {
+      max-width: 650px;
+      margin: 16px auto 0;
+      color: #9da7c3;
+      font-size: .82rem;
+      line-height: 1.5;
+    }
+
+    .sender-privacy a { color: #dce2f4; text-underline-offset: 3px; }
+
     .sr-only {
       position: absolute;
       width: 1px;
@@ -865,15 +899,8 @@
       <div class="wrap">
         <h2>Got a list of old members?</h2>
         <p>Leave your email and I’ll get in touch about the free seven-day campaign.</p>
-        <!-- Replace this temporary form with Sender.net's published embedded-form snippet before launch. -->
-        <form class="lead-form" id="lead-form" novalidate data-sender-placeholder>
-          <label class="sr-only" for="lead-email">Business email address</label>
-          <input class="lead-input" id="lead-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@yourbusiness.com" required>
-          <input class="sr-only" id="company-website" name="company_website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <button class="button" id="lead-submit" type="submit">Start a win-back campaign <span class="arrow" aria-hidden="true">↗</span></button>
-          <p class="form-note">Email collection is being moved to Sender.net and will be enabled before launch. Read the <a href="privacy.html">privacy notice</a>.</p>
-          <p class="form-status" id="lead-status" role="status" aria-live="polite"></p>
-        </form>
+        <div class="sender-form-field" data-sender-form-id="eVOE49" style="text-align: left"></div>
+        <p class="sender-privacy">By submitting, you’re asking Member Engine to contact you about a win-back campaign. Read the <a href="privacy.html">privacy notice</a>.</p>
       </div>
     </section>
   </main>
@@ -930,16 +957,6 @@
 
     updateCalculator();
 
-    const leadForm = document.getElementById('lead-form');
-    const leadEmail = document.getElementById('lead-email');
-    const leadStatus = document.getElementById('lead-status');
-
-    leadForm.addEventListener('submit', function (event) {
-      event.preventDefault();
-      leadStatus.textContent = 'This form is not live yet. Connect the Sender.net form before launch.';
-      leadStatus.classList.add('is-error');
-      leadEmail.focus();
-    });
   </script>
 </body>
 </html>
