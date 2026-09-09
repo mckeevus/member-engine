@@ -2,5 +2,5 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; connect-src 'self' https://*.sender.net; img-src 'self' data: https://*.sender.net; style-src 'self' 'unsafe-inline' https://*.sender.net; script-src 'self' 'unsafe-inline' https://cdn.sender.net; frame-src https://*.sender.net; base-uri 'self'; form-action 'self' https://*.sender.net; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; connect-src 'self' https://*.sender.net https://www.google.com https://www.gstatic.com; img-src 'self' data: https://*.sender.net https://www.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://*.sender.net https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://cdn.sender.net https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; frame-src https://*.sender.net https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/; base-uri 'self'; form-action 'self' https://*.sender.net; frame-ancestors 'none'; upgrade-insecure-requests
 
